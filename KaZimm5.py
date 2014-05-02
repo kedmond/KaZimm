@@ -22,6 +22,7 @@ substance - string indicating substance name to use in Filename
 
 import bathControl
 import counter as cnt
+import peakDetect as pd
 
 import serial
 import glob
@@ -339,8 +340,9 @@ def createDirectories(rootDir=os.getcwd()):
     
     return directory
 
-def loadData(directory):
 
+
+def loadData(directory):
     # assume each file has the same number of columns
     # calculate the frequency of each column and its std. dev., for error bars
     # record the motorFreqs from the description file
@@ -348,16 +350,26 @@ def loadData(directory):
     if directory[-1] != os.sep: directory += os.sep
     
     fileNames = glob.glob(directory+'rotorSpeeds*')
-    descriptionFile = glob.glob(directory + 'description*')
+    descriptionFile = glob.glob(directory + 'description*')[0]
 
     # extract the motorFreqs from the first column    
-    motorFreqs = np.genfromtxt(descriptionFile[0], skiprows=2, delimiter=',')[:, 2]
+    motorFreqs = np.genfromtxt(descriptionFile, delimiter=',')[:, 2]
+    durations = np.genfromtxt(descriptionFile, delimiter=',')[:, 0]
+    
+    # two columns: motor speeds and rotor speeds
+    data = np.zeros((motorFreqs.size, 2))
+    data[:, 0] = motorFreqs
     
     for file in fileNames:
-        data = np.genfromtxt(file, skiprows=1, delimiter=',')
+        data = np.genfromtxt(file, skiprows=2, delimiter=',')
         
+        ncols = data.shape[1]
         for i in ncols:
             means = np.mean(data[:, i])
+            
+            
+            
+            
 
 
 def processData(rotorCounts, sampRate, duration):
